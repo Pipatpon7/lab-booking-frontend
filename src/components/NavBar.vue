@@ -3,9 +3,17 @@
     <div class="nav-brand">Lab Booking — BUU</div>
     <div class="nav-links">
       <span class="nav-user">สวัสดี {{ authStore.fullName }}</span>
+
+      <template v-if="!authStore.isAdmin">
       <RouterLink to="/rooms">จองห้อง</RouterLink>
       <RouterLink to="/my-bookings">การจองของฉัน</RouterLink>
-      <RouterLink v-if="authStore.isAdmin" to="/admin">Admin</RouterLink>
+      </template>
+
+      <template v-if="authStore.isAdmin">
+      <RouterLink v-if="authStore.isAdmin" to="/admin">จัดการการจอง</RouterLink>
+      <RouterLink v-if="authStore.isAdmin" to="/admin">จัดการห้อง</RouterLink>
+      </template>
+
       <button @click="handleLogout">ออกจากระบบ</button>
     </div>
   </nav>
