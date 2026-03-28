@@ -14,7 +14,7 @@
           </div>
           <span :class="['status', b.status]">{{ statusLabel(b.status) }}</span>
         </div>
-        <p>วันที่: {{ b.date }} | เวลา: {{ b.startTime }} — {{ b.endTime }}</p>
+        <p>วันที่: {{ b.date }} | เวลา: {{ formatTime(b.startTime) }} — {{ formatTime (b.endTime) }}</p>
         <p v-if="b.note">หมายเหตุ: {{ b.note }}</p>
 
         <div v-if="b.status === 'pending'" class="actions">
@@ -59,6 +59,12 @@ function statusLabel(status: string) {
   if (status === 'pending') return 'รอการอนุมัติ'
   if (status === 'approved') return 'อนุมัติแล้ว'
   return 'ปฏิเสธ'
+}
+
+function formatTime(time: string) {
+  const [hourStr, minute] = time.split(':')
+  const hour = parseInt(hourStr!, 10)
+  return `${hour}.${minute} น.`
 }
 </script>
 

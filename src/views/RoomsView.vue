@@ -23,11 +23,15 @@
             <div class="form-row">
               <div class="form-group">
                 <label>เวลาเริ่ม</label>
-                <input v-model="form[room.id]!.startTime" type="time"step="60" />
+                <select v-model="form[room.id]!.startTime">
+                   <option v-for="t in timeSlots" :key="t" :value="t">{{ t }} น.</option>
+                   </select>
               </div>
               <div class="form-group">
                 <label>เวลาสิ้นสุด</label>
-                <input v-model="form[room.id]!.endTime" type="time"step="60" />
+                <select v-model="form[room.id]!.endTime" type="time"step="60" lang="th">
+                  <option v-for="t in timeSlots" :key="t" :value="t">{{ t }} น.</option>
+</select>
               </div>
             </div>
             <div class="form-group">
@@ -64,11 +68,11 @@ const form = reactive<Record<number, FormData>>({})
 const loading = reactive<Record<number, boolean>>({})
 const messages = reactive<Record<number, Message>>({})
 
-const formatThaiTime = (time: string) => {
-  if (!time) return '--:-- น.'
-  // แปลงจาก "13:00" เป็น "13:00 น."
-  return `${time} น.`
-}
+const timeSlots = Array.from({ length: 13 }, (_, i) => {
+    const hour = i + 8
+    return `${String(hour).padStart(2, '0')}:00`
+})
+
 onMounted(async () => {
   const res = await api.get('/rooms')
   rooms.value = res.data
