@@ -29,7 +29,7 @@
               </div>
               <div class="form-group">
                 <label>เวลาสิ้นสุด</label>
-                <select v-model="form[room.id]!.endTime" type="time"step="60" lang="th">
+                <select v-model="form[room.id]!.endTime">
                   <option v-for="t in timeSlots" :key="t" :value="t">{{ t }} น.</option>
 </select>
               </div>

@@ -4,7 +4,7 @@ import RegisterView from "../views/RegisterView.vue";
 import RoomsView from "../views/RoomsView.vue";
 import MyBookingsView from "../views/MyBookingsView.vue";
 import AdminView from "../views/AdminView.vue";
-
+import AdminRoomsView from "../views/AdminRoomsView.vue";
 const router = createRouter({
   history: createWebHistory(),
   routes: [
@@ -20,6 +20,11 @@ const router = createRouter({
     {
       path: "/admin",
       component: AdminView,
+      meta: { requiresAuth: true, requiresAdmin: true },
+    },
+    {
+      path: "/admin/rooms",
+      component: AdminRoomsView,
       meta: { requiresAuth: true, requiresAdmin: true },
     },
   ],

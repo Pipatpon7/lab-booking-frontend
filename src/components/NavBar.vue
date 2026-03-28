@@ -11,7 +11,7 @@
 
       <template v-if="authStore.isAdmin">
       <RouterLink v-if="authStore.isAdmin" to="/admin">จัดการการจอง</RouterLink>
-      <RouterLink v-if="authStore.isAdmin" to="/admin">จัดการห้อง</RouterLink>
+      <RouterLink v-if="authStore.isAdmin" to="/admin/rooms">จัดการห้อง</RouterLink>
       </template>
 
       <button @click="handleLogout">ออกจากระบบ</button>
