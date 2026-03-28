@@ -28,7 +28,10 @@
             </td>
             <td class="actions">
               <button class="btn-edit" @click="openEdit(room)">แก้ไข</button>
-              <button class="btn-delete" @click="handleDelete(room.id)">ปิดห้อง</button>
+              <button v-if="!room.isActive" class="btn-activate" @click="handleToggleStatus(room)">
+    เปิดห้อง
+  </button>
+              <button v-else class="btn-delete" @click="handleDelete(room.id)">ปิดห้อง</button>
             </td>
           </tr>
         </tbody>
@@ -158,10 +161,27 @@ async function handleSave() {
 }
 
 async function handleDelete(id: number) {
-  // confirm ก่อนลบ เป็น UX ที่ดี
   if (!confirm('ยืนยันการปิดห้องนี้?')) return
   await api.delete(`/rooms/${id}`)
   await loadRooms()
+}
+
+async function handleToggleStatus(room: Room) {
+  // ถาม confirm ก่อนทุกครั้ง โดยเปลี่ยนข้อความตามสถานะปัจจุบัน
+  const action = room.isActive ? 'ปิดห้อง' : 'เปิดห้อง'
+  if (!confirm(`ยืนยันการ${action} "${room.name}"?`)) return
+  // ถ้ากด cancel ให้หยุดทำงานทันที
+
+  await api.patch(`/rooms/${room.id}`, {
+    isActive: !room.isActive
+    // !room.isActive คือ toggle ค่า boolean
+    // ถ้า isActive = true  → ส่ง false (ปิดห้อง)
+    // ถ้า isActive = false → ส่ง true  (เปิดห้อง)
+  })
+
+  await loadRooms()
+  // โหลดข้อมูลใหม่จาก backend หลัง toggle
+  // เพื่อให้ตารางแสดงสถานะล่าสุดถูกต้อง
 }
 </script>
 
@@ -180,6 +200,15 @@ tr:last-child td { border-bottom: none; }
 .btn-add { background: #4f46e5; color: white; border: none; padding: 0.6rem 1.2rem; border-radius: 8px; cursor: pointer; font-size: 0.9rem; }
 .btn-edit { background: #f0f4ff; color: #4f46e5; border: none; padding: 0.35rem 0.8rem; border-radius: 6px; cursor: pointer; font-size: 0.85rem; }
 .btn-delete { background: #fff0f0; color: #dc2626; border: none; padding: 0.35rem 0.8rem; border-radius: 6px; cursor: pointer; font-size: 0.85rem; }
+.btn-activate {
+  background: #f0fdf4;   
+  color: #16a34a;        
+  border: none;
+  padding: 0.35rem 0.8rem;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.85rem;
+}
 .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.4); display: flex; align-items: center; justify-content: center; z-index: 100; }
 .modal { background: white; border-radius: 12px; padding: 1.75rem; width: 100%; max-width: 420px; }
 .modal h3 { margin: 0 0 1.25rem; }
