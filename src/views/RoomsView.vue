@@ -30,7 +30,7 @@
               <div class="form-group">
                 <label>เวลาสิ้นสุด</label>
                 <select v-model="form[room.id]!.endTime">
-                  <option v-for="t in timeSlots" :key="t" :value="t">{{ t }} น.</option>
+                  <option v-for="t in getEndSlots(form[room.id]!.startTime)" :key="t" :value="t">{{ t }} น.</option>
 </select>
               </div>
             </div>
@@ -54,7 +54,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, reactive } from 'vue'
+import { ref, onMounted, reactive, watch } from 'vue'
 import api from '../api/axios'
 import NavBar from '../components/NavBar.vue'
 
@@ -72,6 +72,14 @@ const timeSlots = Array.from({ length: 13 }, (_, i) => {
     const hour = i + 8
     return `${String(hour).padStart(2, '0')}:00`
 })
+function getEndSlots(startTime: string | undefined): string[] {
+  if (!startTime) return []
+  const startHour = parseInt(startTime.split(':')[0] ?? '0')
+  return timeSlots.filter((t) => {
+    const h = parseInt(t.split(':')[0] ?? '0')
+    return h > startHour && h <= startHour + 1
+  })
+}
 
 onMounted(async () => {
   const res = await api.get('/rooms')
@@ -79,6 +87,21 @@ onMounted(async () => {
   rooms.value.forEach((room) => {
     form[room.id] = { date: '', startTime: '', endTime: '', note: '' }
     loading[room.id] = false
+  })
+  // watch แต่ละ room: ถ้า startTime เปลี่ยนแล้ว endTime ไม่ valid ให้ reset
+  rooms.value.forEach((room) => {
+    watch(
+      () => form[room.id]?.startTime,
+      (newStart) => {
+        if (!newStart) return
+        const validSlots = getEndSlots(newStart)
+        const current = form[room.id]?.endTime
+        // ถ้า endTime ปัจจุบันไม่อยู่ใน valid slots ให้ set เป็น slot แรก
+        if (!validSlots.includes(current ?? '')) {
+          form[room.id]!.endTime = validSlots[0] ?? ''
+        }
+      }
+    )
   })
 })
 
