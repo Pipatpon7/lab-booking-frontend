@@ -2,7 +2,7 @@
   <div class="container">
     <div class="card">
       <h2>เข้าสู่ระบบ</h2>
-      <p class="subtitle">ระบบจองห้อง Lab สำนักคอมพิวเตอร์</p>
+      <p class="subtitle">ระบบจองห้องคอมพิวเตอร์</p>
 
       <div class="form-group">
         <label>Email</label>
