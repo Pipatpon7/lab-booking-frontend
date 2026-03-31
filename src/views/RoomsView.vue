@@ -29,8 +29,11 @@
               </div>
               <div class="form-group">
                 <label>เวลาสิ้นสุด</label>
-                <select v-model="form[room.id]!.endTime">
-                  <option v-for="t in getEndSlots(form[room.id]!.startTime)" :key="t" :value="t">{{ t }} น.</option>
+                <select v-model="form[room.id]!.endTime" disabled 
+  class="bg-gray-200 text-gray-900 font-medium cursor-not-allowed ">
+                  <option :value="form[room.id]!.endTime">
+    {{ form[room.id]!.endTime ? form[room.id]!.endTime + ' น.' : 'เลือกเวลาเริ่ม' }}
+  </option>
 </select>
               </div>
             </div>
@@ -43,7 +46,8 @@
               {{ messages[room.id]!.text }}
             </p>
 
-            <button @click="handleBook(room.id)" :disabled="loading[room.id]">
+            <button @click="handleBook(room.id)" :disabled="loading[room.id] || messages[room.id]?.type === 'error'" 
+            :class="{ 'bg-gray-400 cursor-not-allowed': loading[room.id] || messages[room.id]?.type === 'error' }">
               {{ loading[room.id] ? 'กำลังจอง...' : 'จองห้องนี้' }}
             </button>
           </div>
@@ -66,19 +70,21 @@ const rooms = ref<Room[]>([])
 const today = new Date().toISOString().split('T')[0]
 const form = reactive<Record<number, FormData>>({})
 const loading = reactive<Record<number, boolean>>({})
-const messages = reactive<Record<number, Message>>({})
+const messages = reactive<Record<number, Message | null>>({})
 
 const timeSlots = Array.from({ length: 13 }, (_, i) => {
     const hour = i + 8
     return `${String(hour).padStart(2, '0')}:00`
 })
-function getEndSlots(startTime: string | undefined): string[] {
-  if (!startTime) return []
+
+function calculateEndTime(startTime: string | undefined): string {
+  if (!startTime) return ''
   const startHour = parseInt(startTime.split(':')[0] ?? '0')
-  return timeSlots.filter((t) => {
-    const h = parseInt(t.split(':')[0] ?? '0')
-    return h > startHour && h <= startHour + 1
-  })
+  const endHour = startHour + 2 
+  if (endHour > 20) {
+      return '20:00' 
+  }
+  return `${String(endHour).padStart(2, '0')}:00`
 }
 
 onMounted(async () => {
@@ -90,19 +96,27 @@ onMounted(async () => {
   })
   // watch แต่ละ room: ถ้า startTime เปลี่ยนแล้ว endTime ไม่ valid ให้ reset
   rooms.value.forEach((room) => {
-    watch(
-      () => form[room.id]?.startTime,
-      (newStart) => {
-        if (!newStart) return
-        const validSlots = getEndSlots(newStart)
-        const current = form[room.id]?.endTime
-        // ถ้า endTime ปัจจุบันไม่อยู่ใน valid slots ให้ set เป็น slot แรก
-        if (!validSlots.includes(current ?? '')) {
-          form[room.id]!.endTime = validSlots[0] ?? ''
-        }
+  watch(
+    () => form[room.id]?.startTime,
+    (newStart) => {
+      if (!newStart) {
+        messages[room.id] = null; // ล้างข้อความถ้ายังไม่ได้เลือกเวลา
+    return;
+  }
+        const startHour = parseInt(newStart.split(':')[0] ?? '0')
+        if (startHour >= 20) {
+      messages[room.id] = {
+      text: '⚠️ ไม่สามารถจองหลังจากเวลา 20:00 น. ได้',
+      type: 'error'
+    };
+      form[room.id]!.endTime = '20:00' //
+      } else {
+        messages[room.id] = null;
+        form[room.id]!.endTime = calculateEndTime(newStart)
       }
-    )
-  })
+    }
+  )
+})
 })
 
 async function handleBook(roomId: number) {
